@@ -1,4 +1,4 @@
-# 🅿️ BCC AVPMS - Executive Dashboard
+# BCC AVPMS - Executive Dashboard
 
 A high-fidelity, interactive executive dashboard prototype for the **Blantyre City Council Automated Vehicle Parking Management System (AVPMS)**. This project demonstrates a complete, end-to-end municipal parking workflow—from citizen engagement and mobile money payments to offline field enforcement and executive revenue assurance.
 
