@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="Blantyre City Council Automated Vehicle Parking Management System">
+<title>BCC AVPMS - Executive Dashboard</title>
+<!-- Favicon (inline SVG - no external file needed) -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234a80f5'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>B</text></svg>">
+<!-- Preconnect -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://unpkg.com">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<!-- Fonts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.6/index.css" crossorigin="anonymous">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+:root{
+--bg:#0a0a0f;--bg2:#0f0f16;--card:rgba(20,20,30,0.8);--card-h:rgba(28,28,42,0.92);
+--brd:rgba(255,255,255,0.08);--brd-a:rgba(74,128,245,0.32);
+--accent:#4a80f5;--accent2:#6e98f8;--amber:#f59e0b;--red:#ea5455;--purple:#9b7bff;--cyan:#22d3ee;--emerald:#28c76f;
+--t1:#fafafa;--t2:rgba(250,250,250,0.7);--t3:rgba(250,250,250,0.5);
+--ease:cubic-bezier(0.16,1,0.3,1);--ease-out:cubic-bezier(0.33,1,0.68,1);
+--dur:0.6s;--dur-fast:0.3s;--dur-slow:0.9s;
+--font-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","SF Pro","Helvetica Neue","Inter",system-ui,sans-serif;
+--font-mono:"SF Mono","JetBrains Mono","Fira Code",ui-monospace,monospace;
+--sidebar-w:80px;--topbar-h:72px;--bottom-nav-h:0px;
+--radius-sm:10px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;
+--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-feature-settings:"kern" 1,"liga" 1,"calt" 1;line-height:1.5}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(74,128,245,0.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(155,123,253,0.04) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(34,211,238,0.03) 0%,transparent 60%);pointer-events:none;z-index:0}
+body.loading{overflow:hidden}
+.app{position:relative;z-index:1;opacity:0;transition:opacity 0.8s var(--ease)}
+.app.ready{opacity:1}
+/* Skip Link */
+.skip-link{position:absolute;top:-40px;left:0;background:var(--accent);color:white;padding:8px 16px;z-index:10000;text-decoration:none;border-radius:0 0 8px 0;transition:top 0.2s}
+.skip-link:focus{top:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Utility Classes */
+.flex{display:flex}.flex-col{flex-direction:column}.flex-1{flex:1}.flex-shrink-0{flex-shrink:0}
+.items-center{align-items:center}.items-start{align-items:flex-start}
+.justify-center{justify-content:center}.justify-between{justify-content:space-between}
+.gap-1{gap:var(--sp-1)}.gap-2{gap:var(--sp-2)}.gap-3{gap:var(--sp-3)}.gap-4{gap:var(--sp-4)}.gap-5{gap:var(--sp-5)}.gap-6{gap:var(--sp-6)}.gap-8{gap:var(--sp-8)}
+.min-w-0{min-width:0}.w-full{width:100%}
+.text-xs{font-size:11px}.text-sm{font-size:12px}.text-base{font-size:13px}.text-md{font-size:14px}.text-lg{font-size:15px}.text-xl{font-size:17px}.text-2xl{font-size:20px}.text-3xl{font-size:24px}
+.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-bold{font-weight:700}
+.text-t1{color:var(--t1)}.text-t2{color:var(--t2)}.text-t3{color:var(--t3)}
+.text-accent{color:var(--accent)}.text-purple{color:var(--purple)}.text-cyan{color:var(--cyan)}.text-emerald{color:var(--emerald)}.text-red{color:var(--red)}.text-amber{color:var(--amber)}
+.bg-accent-soft{background:rgba(74,128,245,0.12)}.bg-purple-soft{background:rgba(155,123,253,0.12)}.bg-cyan-soft{background:rgba(34,211,238,0.12)}.bg-emerald-soft{background:rgba(40,199,111,0.12)}.bg-red-soft{background:rgba(234,84,85,0.12)}.bg-amber-soft{background:rgba(245,158,11,0.12)}
+.mt-2{margin-top:var(--sp-2)}.mt-3{margin-top:var(--sp-3)}.mt-4{margin-top:var(--sp-4)}.mt-5{margin-top:var(--sp-5)}.mt-6{margin-top:var(--sp-6)}.mt-8{margin-top:var(--sp-8)}
+.mb-2{margin-bottom:var(--sp-2)}.mb-3{margin-bottom:var(--sp-3)}.mb-4{margin-bottom:var(--sp-4)}.mb-5{margin-bottom:var(--sp-5)}.mb-6{margin-bottom:var(--sp-6)}.mb-8{margin-bottom:var(--sp-8)}
+.p-3{padding:var(--sp-3)}.p-4{padding:var(--sp-4)}.p-5{padding:var(--sp-5)}.p-6{padding:var(--sp-6)}.p-8{padding:var(--sp-8)}
+.px-4{padding-left:var(--sp-4);padding-right:var(--sp-4)}.px-5{padding-left:var(--sp-5);padding-right:var(--sp-5)}
+.py-2{padding-top:var(--sp-2);padding-bottom:var(--sp-2)}.py-3{padding-top:var(--sp-3);padding-bottom:var(--sp-3)}
+.rounded-sm{border-radius:var(--radius-sm)}.rounded-md{border-radius:var(--radius-md)}.rounded-lg{border-radius:var(--radius-lg)}.rounded-xl{border-radius:var(--radius-xl)}.rounded-full{border-radius:980px}
+.text-center{text-align:center}.text-left{text-align:left}
+.block{display:block}.inline-block{display:inline-block}.hidden{display:none}
+.tracking-tight{letter-spacing:-0.02em}.tracking-tighter{letter-spacing:-0.03em}.tracking-tightest{letter-spacing:-0.04em}
+.leading-tight{line-height:1.1}.leading-normal{line-height:1.5}.leading-relaxed{line-height:1.9}
+.whitespace-nowrap{white-space:nowrap}.break-word{word-break:break-word}
+.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}
+.opacity-90{opacity:0.9}
+.border-b{border-bottom:1px solid var(--brd)}.border-b-soft{border-bottom:1px solid rgba(255,255,255,0.04)}
+.font-mono{font-family:var(--font-mono)}
+.icon-sm{font-size:9px}.icon-xs{font-size:6px}.icon-dot{font-size:8px}.icon-tiny{font-size:5px}
+i.fa-solid,i.fa-regular,i.fa-brands{display:inline-block;font-style:normal;font-weight:900;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* Loader */
+.loader{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-6);transition:opacity 0.8s var(--ease),visibility 0.8s var(--ease)}
+.loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loader-logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:28px;color:white;box-shadow:0 12px 48px rgba(74,128,245,0.4);animation:loaderPulse 2s var(--ease) infinite;position:relative}
+.loader-logo::after{content:'';position:absolute;inset:-6px;border-radius:24px;background:linear-gradient(135deg,var(--accent),var(--purple));z-index:-1;opacity:0.5;filter:blur(16px)}
+@keyframes loaderPulse{0%,100%{transform:scale(1);box-shadow:0 12px 48px rgba(74,128,245,0.4)}50%{transform:scale(1.05);box-shadow:0 16px 56px rgba(74,128,245,0.6)}}
+.loader-text{font-size:13px;color:var(--t3);letter-spacing:0.12em;text-transform:uppercase;font-weight:500}
+.loader-bar{width:200px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;position:relative}
+.loader-bar::after{content:'';position:absolute;left:0;top:0;height:100%;width:40%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:2px;animation:loaderSlide 1.4s var(--ease) infinite}
+@keyframes loaderSlide{0%{left:-40%}100%{left:100%}}
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:28px 0;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:all var(--dur) var(--ease)}
+.logo{width:48px;height:48px;border-radius:var(--radius-md);background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:white;margin-bottom:40px;box-shadow:0 8px 32px rgba(74,128,245,0.35);position:relative;transition:all var(--dur) var(--ease);font-family:var(--font-sans);letter-spacing:-0.02em}
+.logo::after{content:'';position:absolute;inset:-4px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--purple));z-index:-1;opacity:0.5;filter:blur(12px);transition:opacity var(--dur) var(--ease)}
+.logo:hover::after{opacity:0.8}
+.snav{display:flex;flex-direction:column;gap:6px;width:100%;padding:0 16px;flex:1}
+.nbtn{width:52px;height:52px;border-radius:var(--radius-md);border:none;background:transparent;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--dur) var(--ease);position:relative;font-size:20px;-webkit-tap-highlight-color:transparent}
+.nbtn:hover{background:rgba(255,255,255,0.06);color:var(--t2);transform:scale(1.05)}
+.nbtn.active{background:rgba(74,128,245,0.12);color:var(--accent)}
+.nbtn.active::before{content:'';position:absolute;left:-16px;top:50%;transform:translateY(-50%);width:4px;height:24px;background:var(--accent);border-radius:0 4px 4px 0;transition:all var(--dur) var(--ease)}
+.nbtn .tip{position:absolute;left:68px;background:var(--card);border:1px solid var(--brd);padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:all var(--dur-fast) var(--ease);color:var(--t1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:200;font-weight:500}
+.nbtn:hover .tip{opacity:1;transform:translateX(4px)}
+.sbot{padding:0 16px}
+.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;cursor:pointer;transition:all var(--dur) var(--ease);color:white;letter-spacing:-0.01em}
+.avatar:hover{transform:scale(1.1);box-shadow:0 8px 24px rgba(155,123,253,0.3)}
+/* Main */
+.main{margin-left:var(--sidebar-w);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+.topbar{height:var(--topbar-h);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 40px;position:sticky;top:0;z-index:50;background:rgba(10,10,15,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);transition:all var(--dur) var(--ease)}
+.tl{display:flex;align-items:center;gap:var(--sp-6);min-width:0;flex:1}
+.ttitle{font-size:17px;font-weight:600;letter-spacing:-0.025em;transition:all var(--dur) var(--ease);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsub{font-size:13px;color:var(--t3);margin-top:2px;letter-spacing:-0.01em;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr{display:flex;align-items:center;gap:var(--sp-3);flex-shrink:0}
+.search{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid var(--brd);border-radius:12px;padding:10px 16px;min-width:240px;transition:all var(--dur) var(--ease);color:var(--t3)}
+.search:hover{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.07)}
+.search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,128,245,0.1)}
+.search input{background:none;border:none;color:var(--t1);font-size:14px;outline:none;width:100%;letter-spacing:-0.01em;font-family:var(--font-sans)}
+.search input::placeholder{color:var(--t3)}
+.ibtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--brd);background:rgba(255,255,255,0.04);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all var(--dur) var(--ease);position:relative;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.ibtn:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);transform:translateY(-2px)}
+.ndot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px rgba(74,128,245,0.7)}
+.live{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--emerald);background:rgba(40,199,111,0.12);border:1px solid rgba(40,199,111,0.25);padding:6px 12px;border-radius:980px;font-weight:500;letter-spacing:-0.01em;white-space:nowrap}
+.ldot{width:7px;height:7px;background:var(--emerald);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(40,199,111,0.5)}50%{opacity:0.7;box-shadow:0 0 0 8px rgba(40,199,111,0)}}
+.settings-wrap{position:relative}
+.smenu{position:absolute;top:calc(100% + 12px);right:0;background:var(--card);border:1px solid var(--brd);border-radius:16px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);min-width:260px;padding:10px;opacity:0;pointer-events:none;transform:translateY(-12px) scale(0.96);transition:all var(--dur) var(--ease);box-shadow:0 24px 64px rgba(0,0,0,0.6);z-index:300}
+.smenu.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+.smenu-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.08em;padding:10px 14px 8px;font-weight:600}
+.sitem{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--dur-fast) var(--ease);font-size:14px;color:var(--t2);border:none;background:none;width:100%;text-align:left;font-family:var(--font-sans);letter-spacing:-0.01em}
+.sitem:hover{background:rgba(255,255,255,0.06);color:var(--t1);transform:translateX(4px)}
+.sitem .ico{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;background:rgba(255,255,255,0.05);transition:all var(--dur-fast) var(--ease);flex-shrink:0}
+.sitem:hover .ico{transform:scale(1.1)}
+.sitem .meta{font-size:12px;color:var(--t3);margin-top:3px;letter-spacing:-0.01em}
+.content{padding:36px 40px}
+.sec{display:none;animation:fade var(--dur-slow) var(--ease)}
+.sec.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.sh{margin-bottom:36px}
+.sh h2{font-size:40px;font-weight:700;margin-bottom:8px;letter-spacing:-0.035em;line-height:1.1}
+.sh p{font-size:17px;color:var(--t2);letter-spacing:-0.02em;line-height:1.5;font-weight:400}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:var(--radius-lg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:all var(--dur) var(--ease);overflow:hidden;box-shadow:0 20px 48px rgba(0,0,0,0.15)}
+.card:hover{border-color:rgba(255,255,255,0.14);background:var(--card-h);transform:translateY(-4px);box-shadow:0 32px 64px rgba(0,0,0,0.25)}
+.ch{padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cb{padding:24px 28px 28px}
+.ct{font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px;letter-spacing:-0.02em}
+.ct i{font-size:16px;opacity:0.9}
+.g{display:grid;gap:24px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g2-inner{grid-template-columns:1fr 1fr;gap:12px}
+.mc{background:var(--card);border:1px solid var(--brd);border-radius:var(--radius-lg);padding:26px;position:relative;overflow:hidden;transition:all var(--dur) var(--ease)}
+.mc:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.12);box-shadow:0 24px 56px rgba(0,0,0,0.2)}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity var(--dur) var(--ease)}
+.mc:hover::before{opacity:1}
+.mc.o::before{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.mc.p::before{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.mc.c::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.mc.e::before{background:linear-gradient(90deg,transparent,var(--emerald),transparent)}
+.ml{font-size:12px;color:var(--t3);margin-bottom:12px;display:flex;align-items:center;gap:7px;letter-spacing:0.02em;text-transform:uppercase;font-weight:500}
+.mv{font-size:40px;font-weight:700;letter-spacing:-0.04em;line-height:1;transition:all var(--dur) var(--ease)}
+.mc:hover .mv{transform:scale(1.02)}
+.mx{font-size:13px;margin-top:10px;display:flex;align-items:center;gap:5px;letter-spacing:-0.01em;font-weight:500}
+.mx.up{color:var(--emerald)}
+.mx.dn{color:var(--red)}
+.mi{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;position:absolute;top:22px;right:22px;transition:all var(--dur) var(--ease)}
+.mc:hover .mi{transform:scale(1.1) rotate(5deg)}
+.btn{padding:12px 24px;border-radius:980px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all var(--dur) var(--ease);display:inline-flex;align-items:center;gap:10px;font-family:var(--font-sans);letter-spacing:-0.01em;position:relative;overflow:hidden;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn i{font-size:13px}
+.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);opacity:0;transition:opacity var(--dur-fast)}
+.btn:hover::before{opacity:1}
+.bp{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 8px 24px rgba(74,128,245,0.3)}
+.bp:hover{box-shadow:0 12px 32px rgba(74,128,245,0.45);transform:translateY(-2px)}
+.bs{background:rgba(255,255,255,0.08);color:var(--t1);border:1px solid var(--brd)}
+.bs:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.2)}
+.bg{background:transparent;color:var(--t2)}
+.bg:hover{color:var(--t1);background:rgba(255,255,255,0.06)}
+.bd{background:rgba(234,84,85,0.18);color:var(--red);border:1px solid rgba(234,84,85,0.25)}
+.bk{background:rgba(40,199,111,0.18);color:var(--emerald);border:1px solid rgba(40,199,111,0.25)}
+.bsm{padding:8px 18px;font-size:13px;border-radius:980px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:980px;font-size:12px;font-weight:500;letter-spacing:-0.01em;transition:all var(--dur-fast) var(--ease);white-space:nowrap}
+.pg{background:rgba(40,199,111,0.12);color:var(--emerald);border:1px solid rgba(40,199,111,0.2)}
+.pr{background:rgba(234,84,85,0.12);color:var(--red);border:1px solid rgba(234,84,85,0.2)}
+.pa{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+.pp{background:rgba(155,123,253,0.12);color:var(--purple);border:1px solid rgba(155,123,253,0.2)}
+.pc{background:rgba(34,211,238,0.12);color:var(--cyan);border:1px solid rgba(34,211,238,0.2)}
+.p-muted{background:rgba(255,255,255,0.06);color:var(--t3);border:1px solid var(--brd)}
+table{width:100%;border-collapse:collapse;min-width:600px}
+.th-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -28px;padding:0 28px}
+th{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:0.04em;text-align:left;padding:12px 18px;border-bottom:1px solid var(--brd);font-weight:600;white-space:nowrap}
+td{font-size:14px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--t2);transition:all var(--dur-fast);letter-spacing:-0.01em}
+tr{transition:all var(--dur-fast)}
+tr:hover td{background:rgba(255,255,255,0.03)}
+.mono{font-family:var(--font-mono);font-size:13px;letter-spacing:-0.02em}
+.pb{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.pf{height:100%;border-radius:4px;transition:width 1.2s var(--ease)}
+.ai{background:rgba(234,84,85,0.04);border:1px solid rgba(234,84,85,0.12);border-radius:16px;padding:20px 24px;transition:all var(--dur) var(--ease)}
+.ai:hover{background:rgba(234,84,85,0.08);border-color:rgba(234,84,85,0.25);transform:translateX(4px)}
+.ai.w{background:rgba(245,158,11,0.04);border-color:rgba(245,158,11,0.12)}
+.ai.w:hover{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25)}
+.tc{position:fixed;top:88px;right:40px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:calc(100vw - 48px)}
+.toast{padding:16px 24px;border-radius:14px;font-size:14px;font-weight:500;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);animation:ti var(--dur) var(--ease);display:flex;align-items:center;gap:12px;min-width:280px;max-width:100%;border:1px solid;box-shadow:0 16px 48px rgba(0,0,0,0.3);letter-spacing:-0.01em}
+.toast i{font-size:16px}
+.toast.s{background:rgba(40,199,111,0.18);border-color:rgba(40,199,111,0.25);color:var(--emerald)}
+.toast.e{background:rgba(234,84,85,0.18);border-color:rgba(234,84,85,0.25);color:var(--red)}
+.toast.i{background:rgba(155,123,253,0.18);border-color:rgba(155,123,253,0.25);color:var(--purple)}
+@keyframes ti{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}
+.map{border-radius:16px;overflow:hidden;border:1px solid var(--brd)}
+.leaflet-container{background:#0f0f16 !important}
+.qr{background:white;padding:14px;border-radius:16px;display:inline-block;transition:all var(--dur) var(--ease);max-width:100%;color:#000}
+.qr:hover{transform:scale(1.05);box-shadow:0 16px 48px rgba(255,255,255,0.1)}
+.qr svg{max-width:100%;height:auto}
+.phone{width:280px;margin:0 auto;background:#111118;border-radius:36px;border:3px solid rgba(255,255,255,0.12);padding:14px;position:relative;transition:all var(--dur) var(--ease);max-width:100%}
+.phone:hover{transform:translateY(-8px);box-shadow:0 32px 64px rgba(0,0,0,0.4)}
+.notch{width:88px;height:22px;background:#000;border-radius:0 0 14px 14px;margin:0 auto 14px}
+.screen{background:#0a0a12;border-radius:24px;min-height:400px;padding:18px;overflow:hidden}
+.term{background:rgba(0,0,0,0.5);border:1px solid var(--brd);border-radius:16px;padding:20px;font-family:var(--font-mono);font-size:13px;line-height:1.9;letter-spacing:-0.02em;overflow-x:auto}
+.thd{display:flex;gap:7px;margin-bottom:14px}
+.tdt{width:11px;height:11px;border-radius:50%;transition:all var(--dur-fast)}
+.tdt:hover{transform:scale(1.2)}
+.fs{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;border:1px solid var(--brd);transition:all var(--dur) var(--ease);margin-bottom:10px}
+.fs.a{border-color:var(--accent);background:rgba(74,128,245,0.06);transform:translateX(8px)}
+.fs.d{border-color:rgba(40,199,111,0.35);background:rgba(40,199,111,0.06)}
+.fsn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;background:rgba(255,255,255,0.06);color:var(--t3);flex-shrink:0;transition:all var(--dur) var(--ease)}
+.fs.a .fsn{background:var(--accent);color:white;transform:scale(1.1)}
+.fs.d .fsn{background:var(--emerald);color:white}
+.av{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.04);transition:all var(--dur-fast)}
+.av:hover{transform:translateX(4px)}
+.av:last-child{border-bottom:none}
+.ad{width:9px;height:9px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.at{font-size:14px;color:var(--t2);letter-spacing:-0.01em;word-break:break-word}
+.am{font-size:12px;color:var(--t3);margin-top:3px;letter-spacing:-0.01em}
+.inp{background:rgba(255,255,255,0.05);border:1px solid var(--brd);border-radius:12px;padding:12px 16px;color:var(--t1);font-size:14px;outline:none;width:100%;font-family:var(--font-sans);transition:all var(--dur) var(--ease);letter-spacing:-0.01em;min-width:0}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(74,128,245,0.1);background:rgba(255,255,255,0.07)}
+.inp::placeholder{color:var(--t3)}
+select.inp{cursor:pointer}
+select.inp option{background:var(--bg2)}
+.hero{background:linear-gradient(135deg,rgba(74,128,245,0.1) 0%,rgba(155,123,253,0.06) 50%,rgba(34,211,238,0.06) 100%);border:1px solid var(--brd);border-radius:var(--radius-xl);padding:56px;margin-bottom:32px;position:relative;overflow:hidden;transition:all var(--dur) var(--ease)}
+.hero:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px)}
+.hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(74,128,245,0.12) 0%,transparent 70%);pointer-events:none;animation:float 8s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,20px)}}
+.hero h1{font-size:56px;font-weight:700;margin-bottom:12px;letter-spacing:-0.04em;line-height:1.05}
+.hero p{font-size:19px;color:var(--t2);max-width:640px;line-height:1.5;letter-spacing:-0.02em;font-weight:400}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(40,199,111,0.12);border:1px solid rgba(40,199,111,0.25);color:var(--emerald);padding:8px 16px;border-radius:980px;font-size:13px;font-weight:500;margin-bottom:20px;letter-spacing:-0.01em}
+.launcher{background:var(--card);border:1px solid var(--brd);border-radius:var(--radius-lg);padding:28px;cursor:pointer;transition:all var(--dur) var(--ease);position:relative;overflow:hidden}
+.launcher:hover{transform:translateY(-6px);border-color:rgba(255,255,255,0.18);background:var(--card-h);box-shadow:0 32px 64px rgba(0,0,0,0.3)}
+.launcher .lg{position:absolute;top:-50px;right:-50px;width:140px;height:140px;border-radius:50%;filter:blur(50px);opacity:0.25;transition:all var(--dur) var(--ease)}
+.launcher:hover .lg{opacity:0.4;transform:scale(1.2)}
+.launcher h3{font-size:22px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:12px;letter-spacing:-0.03em}
+.launcher h3 i{font-size:22px}
+.launcher p{font-size:14px;color:var(--t3);line-height:1.5;margin-bottom:20px;letter-spacing:-0.01em;font-weight:400}
+.launcher .arrow{font-size:14px;color:var(--accent);font-weight:500;display:flex;align-items:center;gap:6px;transition:all var(--dur-fast);letter-spacing:-0.01em}
+.launcher:hover .arrow{transform:translateX(6px)}
+.cap-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);transition:all var(--dur-fast)}
+.cap-row:hover{transform:translateX(4px)}
+.cap-row:last-child{border-bottom:none}
+.cap-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cap-text{font-size:14px;color:var(--t2);flex:1;letter-spacing:-0.01em}
+.icon-box{width:48px;height:48px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all var(--dur);flex-shrink:0}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.reveal{opacity:0;transform:translateY(32px);transition:all var(--dur-slow) var(--ease)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-stagger>*{opacity:0;transform:translateY(24px);transition:all var(--dur) var(--ease)}
+.reveal-stagger.visible>*{opacity:1;transform:translateY(0)}
+.reveal-stagger.visible>*:nth-child(1){transition-delay:0.05s}
+.reveal-stagger.visible>*:nth-child(2){transition-delay:0.1s}
+.reveal-stagger.visible>*:nth-child(3){transition-delay:0.15s}
+.reveal-stagger.visible>*:nth-child(4){transition-delay:0.2s}
+.reveal-stagger.visible>*:nth-child(5){transition-delay:0.25s}
+.reveal-stagger.visible>*:nth-child(6){transition-delay:0.3s}
+@media(max-width:1024px){
+:root{--sidebar-w:72px;--topbar-h:64px}
+.content{padding:28px 24px}
+.topbar{padding:0 24px}
+.hero{padding:40px}
+.hero h1{font-size:44px}
+.hero p{font-size:17px}
+.sh h2{font-size:34px}
+.sh p{font-size:16px}
+.mv{font-size:34px}
+.mc{padding:22px}
+.search{min-width:180px}
+.nbtn{width:48px;height:48px;font-size:18px}
+}
+@media(max-width:768px){
+:root{--sidebar-w:0px;--topbar-h:60px;--bottom-nav-h:72px}
+.sidebar{
+left:0;right:0;top:auto;bottom:0;width:100%;height:var(--bottom-nav-h);
+flex-direction:row;padding:0 8px;border-right:none;border-top:1px solid var(--brd);
+background:rgba(15,15,22,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+padding-bottom:env(safe-area-inset-bottom);
+}
+.logo{display:none}
+.snav{flex-direction:row;justify-content:space-around;align-items:center;padding:0;gap:0;flex:1}
+.nbtn{width:56px;height:56px;font-size:20px;border-radius:12px}
+.nbtn.active::before{display:none}
+.nbtn.active::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--accent);border-radius:3px 3px 0 0}
+.nbtn .tip{display:none}
+.sbot{display:none}
+.main{margin-left:0;padding-bottom:var(--bottom-nav-h)}
+.content{padding:20px 16px}
+.topbar{padding:0 16px}
+.search{display:none}
+.live{display:none}
+.tsub{display:none}
+.ttitle{font-size:15px}
+.g4{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(2,1fr)}
+.hero{padding:32px 24px;border-radius:20px;margin-bottom:24px}
+.hero h1{font-size:36px}
+.hero p{font-size:16px}
+.sh{margin-bottom:24px}
+.sh h2{font-size:28px}
+.sh p{font-size:15px}
+.mv{font-size:30px}
+.mc{padding:20px}
+.mi{width:36px;height:36px;font-size:16px;top:18px;right:18px}
+.ch{padding:20px 20px 0}
+.cb{padding:20px}
+.launcher{padding:22px}
+.launcher h3{font-size:18px}
+.phone{width:240px}
+.screen{min-height:340px;padding:14px}
+.tc{top:auto;bottom:calc(var(--bottom-nav-h) + 16px);right:16px;left:16px;max-width:none}
+.toast{min-width:0;width:100%}
+.smenu{right:-16px;left:-16px;min-width:0}
+.card{border-radius:16px}
+.mc{border-radius:16px}
+}
+@media(max-width:640px){
+.g4,.g3,.g2{grid-template-columns:1fr}
+.hero{padding:28px 20px}
+.hero h1{font-size:30px}
+.hero p{font-size:15px}
+.sh h2{font-size:24px}
+.mv{font-size:28px}
+.mc{padding:18px}
+.launcher{padding:20px}
+.launcher h3{font-size:17px}
+.launcher p{font-size:13px}
+.phone{width:100%;max-width:260px}
+.fs{padding:12px 14px;gap:12px}
+.fsn{width:32px;height:32px;font-size:13px}
+.av{gap:10px;padding:12px 0}
+.at{font-size:13px}
+.ai{padding:16px 18px}
+.ai .g4{grid-template-columns:repeat(2,1fr)}
+.btn{padding:10px 18px;font-size:13px}
+.bsm{padding:7px 14px;font-size:12px}
+.ibtn{width:36px;height:36px;font-size:14px}
+.nbtn{width:52px;height:52px;font-size:18px}
+}
+@media(max-width:400px){
+.content{padding:16px 12px}
+.topbar{padding:0 12px}
+.hero{padding:24px 16px}
+.hero h1{font-size:26px}
+.hero p{font-size:14px}
+.sh h2{font-size:22px}
+.mv{font-size:24px}
+.mc{padding:16px}
+.mi{width:32px;height:32px;font-size:14px;top:14px;right:14px}
+.ch{padding:16px 16px 0}
+.cb{padding:16px}
+.card{border-radius:14px}
+.mc{border-radius:14px}
+.launcher{padding:18px;border-radius:16px}
+.ai .g4{grid-template-columns:1fr}
+.nbtn{width:48px;height:48px;font-size:18px}
+}
+@media(max-height:500px) and (orientation:landscape){
+:root{--bottom-nav-h:56px}
+.nbtn{width:44px;height:44px;font-size:18px}
+.phone{width:200px}
+.screen{min-height:240px}
+}
+@media(prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important}
+html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body class="loading">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="loader" id="loader" role="status" aria-live="polite">
+<div class="loader-logo" aria-hidden="true">B</div>
+<div class="loader-text">Loading Dashboard</div>
+<div class="loader-bar" aria-hidden="true"></div>
+<span class="sr-only">Loading application, please wait...</span>
+</div>
+<div class="app" id="app">
+<aside class="sidebar" role="navigation" aria-label="Main navigation">
+<div class="logo" aria-hidden="true">B</div>
+<nav class="snav">
+<button type="button" class="nbtn active" data-sec="overview" aria-label="Overview">
+<i class="fa-solid fa-compass" aria-hidden="true"></i>
+<span class="tip">Overview</span>
+</button>
+<button type="button" class="nbtn" data-sec="citizen" aria-label="Citizen Flow">
+<i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+<span class="tip">Citizen Flow</span>
+</button>
+<button type="button" class="nbtn" data-sec="payment" aria-label="Mobile Money">
+<i class="fa-solid fa-wallet" aria-hidden="true"></i>
+<span class="tip">Mobile Money</span>
+</button>
+<button type="button" class="nbtn" data-sec="enforcement" aria-label="Enforcement">
+<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+<span class="tip">Enforcement</span>
+</button>
+</nav>
+<div class="sbot">
+<div class="avatar" title="Admin" aria-label="Admin user">
+<i class="fa-solid fa-user" aria-hidden="true"></i>
+</div>
+</div>
+</aside>
+<div class="main">
+<header class="topbar">
+<div class="tl">
+<div class="min-w-0 flex-1">
+<div class="ttitle" id="ptitle">Executive Overview</div>
+<div class="tsub" id="psub">Blantyre City Council • AVPMS</div>
+</div>
+</div>
+<div class="tr">
+<div class="search">
+<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+<input type="text" placeholder="Search..." aria-label="Search">
+</div>
+<div class="live"><span class="ldot"></span> Live</div>
+<button type="button" class="ibtn" aria-label="Notifications">
+<i class="fa-regular fa-bell" aria-hidden="true"></i>
+<span class="ndot"></span>
+</button>
+<div class="settings-wrap">
+<button type="button" class="ibtn" id="settings-btn" aria-label="Settings" aria-expanded="false" aria-controls="settings-menu">
+<i class="fa-solid fa-gear" aria-hidden="true"></i>
+</button>
+<div class="smenu" id="settings-menu" role="menu">
+<div class="smenu-label">Analytics & Reports</div>
+<button type="button" class="sitem" data-sec="backoffice" role="menuitem">
+<span class="ico bg-purple-soft text-purple">
+<i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+</span>
+<div><div>Back-Office</div><div class="meta">Finance & reconciliation</div></div>
+</button>
+<button type="button" class="sitem" data-sec="executive" role="menuitem">
+<span class="ico bg-cyan-soft text-cyan">
+<i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+</span>
+<div><div>Executive KPIs</div><div class="meta">Performance dashboard</div></div>
+</button>
+<button type="button" class="sitem" data-sec="assurance" role="menuitem">
+<span class="ico bg-red-soft text-red">
+<i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i>
+</span>
+<div><div>Revenue Assurance</div><div class="meta">Anomaly detection</div></div>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main id="main-content" role="main">
+<div class="content">
+<!-- Overview -->
+<div class="sec active" id="sec-overview">
+<div class="hero reveal">
+<div class="hero-badge"><span class="ldot"></span><span>All systems operational</span></div>
+<h1>Welcome to BCC AVPMS</h1>
+<p>Automated Vehicle Parking Management System, transforming municipal revenue collection through digital innovation. This prototype demonstrates the complete end-to-end workflow from citizen engagement to executive reporting.</p>
+</div>
+<div class="g g4 reveal-stagger mb-8">
+<div class="mc o">
+<div class="mi bg-accent-soft text-accent"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i></div>
+<div class="ml">Monthly Revenue</div>
+<div class="mv text-accent" data-mwk="12400000" data-format="short">MWK 12.4M</div>
+<div class="mx up"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i> 18% vs last month</div>
+</div>
+<div class="mc p">
+<div class="mi bg-purple-soft text-purple"><i class="fa-solid fa-square-parking" aria-hidden="true"></i></div>
+<div class="ml">Active Sessions</div>
+<div class="mv text-purple">127</div>
+<div class="mx up">Across 5 zones</div>
+</div>
+<div class="mc e">
+<div class="mi bg-emerald-soft text-emerald"><i class="fa-solid fa-signal" aria-hidden="true"></i></div>
+<div class="ml">System Uptime</div>
+<div class="mv text-emerald">99.9%</div>
+<div class="mx up">Last 30 days</div>
+</div>
+<div class="mc c">
+<div class="mi bg-cyan-soft text-cyan"><i class="fa-regular fa-star" aria-hidden="true"></i></div>
+<div class="ml">Citizen Satisfaction</div>
+<div class="mv text-cyan">4.6<span class="text-t3" style="font-size:20px">/5</span></div>
+<div class="mx up">n=1,247 responses</div>
+</div>
+</div>
+<h3 class="text-3xl font-semibold mb-4 text-t2 flex items-center gap-3 tracking-tighter reveal">
+<i class="fa-solid fa-play-circle" aria-hidden="true"></i><span>Live Demo Scenarios</span>
+</h3>
+<div class="g g3 reveal-stagger mb-8">
+<div class="launcher" data-goto="citizen">
+<div class="lg" style="background:var(--accent)"></div>
+<h3><i class="fa-solid fa-mobile-screen-button text-accent" aria-hidden="true"></i>Citizen Parking Flow</h3>
+<p>Experience how citizens scan QR codes, start parking sessions, and pay via mobile money, all from their phone.</p>
+<div class="arrow">Launch demo <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+</div>
+<div class="launcher" data-goto="payment">
+<div class="lg" style="background:var(--purple)"></div>
+<h3><i class="fa-solid fa-money-bill-transfer text-purple" aria-hidden="true"></i>Mobile Money Integration</h3>
+<p>See real-time payment processing through Airtel Money, TNM Mpamba, and MyCash with webhook callbacks.</p>
+<div class="arrow">Launch demo <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+</div>
+<div class="launcher" data-goto="enforcement">
+<div class="lg" style="background:var(--cyan)"></div>
+<h3><i class="fa-solid fa-car-side text-cyan" aria-hidden="true"></i>Enforcement Operations</h3>
+<p>Watch officers verify vehicles, issue tickets, and collect fines, even when offline, with automatic sync.</p>
+<div class="arrow">Launch demo <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>
+</div>
+</div>
+<div class="g g2">
+<div class="card reveal">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Recent Activity</div>
+<span class="pill pg"><i class="fa-solid fa-circle icon-xs" aria-hidden="true"></i> Live</span>
+</div>
+<div class="cb">
+<div class="av"><div class="ad" style="background:var(--emerald)"></div><div><div class="at">Payment received - MWK 2,000 via Airtel Money</div><div class="am">2 min ago • SES-2024-0892</div></div></div>
+<div class="av"><div class="ad" style="background:var(--cyan)"></div><div><div class="at">New parking session started - Bay LIM-003</div><div class="am">5 min ago • Vehicle MDX 1234</div></div></div>
+<div class="av"><div class="ad" style="background:var(--red)"></div><div><div class="at">Ticket issued - TKT-2024-0156</div><div class="am">12 min ago • Officer O-042</div></div></div>
+<div class="av"><div class="ad" style="background:var(--purple)"></div><div><div class="at">Offline data synced - 3 violations</div><div class="am">18 min ago • Officer O-042</div></div></div>
+<div class="av"><div class="ad" style="background:var(--amber)"></div><div><div class="at">Revenue anomaly detected - Limbe Market zone</div><div class="am">25 min ago • -10% below average</div></div></div>
+</div>
+</div>
+<div class="card reveal">
+<div class="ch"><div class="ct"><i class="fa-solid fa-cubes" aria-hidden="true"></i>Platform Capabilities</div></div>
+<div class="cb">
+<div class="cap-row"><span class="cap-dot" style="background:var(--accent)"></span><span class="cap-text">QR-based parking initiation</span><span class="pill pg">Active</span></div>
+<div class="cap-row"><span class="cap-dot" style="background:var(--purple)"></span><span class="cap-text">Mobile money integration (3 providers)</span><span class="pill pg">Active</span></div>
+<div class="cap-row"><span class="cap-dot" style="background:var(--cyan)"></span><span class="cap-text">Offline-first enforcement</span><span class="pill pg">Active</span></div>
+<div class="cap-row"><span class="cap-dot" style="background:var(--emerald)"></span><span class="cap-text">Real-time revenue dashboards</span><span class="pill pg">Active</span></div>
+<div class="cap-row"><span class="cap-dot" style="background:var(--red)"></span><span class="cap-text">Automated revenue assurance</span><span class="pill pg">Active</span></div>
+<div class="cap-row"><span class="cap-dot" style="background:var(--amber)"></span><span class="cap-text">USSD fallback for low-bandwidth</span><span class="pill pa">Sandbox</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Citizen Flow -->
+<div class="sec" id="sec-citizen">
+<div class="sh reveal"><h2>Scenario 1 - Citizen Parking Flow</h2><p>From QR scan to paid session, the complete citizen experience</p></div>
+<div class="g g2">
+<div class="card reveal">
+<div class="ch"><div class="ct"><i class="fa-solid fa-square-parking" aria-hidden="true"></i>Parking Bay LIM-001</div><span class="pill pg">Available</span></div>
+<div class="cb flex flex-col items-center">
+<div class="qr" role="img" aria-label="QR Code for Bay LIM-001">
+<svg viewBox="0 0 100 100" width="160" height="160"><title>QR Code for Bay LIM-001</title>
+<rect width="100" height="100" fill="white"/>
+<rect x="5" y="5" width="25" height="25" fill="black"/><rect x="70" y="5" width="25" height="25" fill="black"/><rect x="5" y="70" width="25" height="25" fill="black"/>
+<rect x="10" y="10" width="15" height="15" fill="white"/><rect x="75" y="10" width="15" height="15" fill="white"/><rect x="10" y="75" width="15" height="15" fill="white"/>
+<rect x="13" y="13" width="9" height="9" fill="black"/><rect x="78" y="13" width="9" height="9" fill="black"/><rect x="13" y="78" width="9" height="9" fill="black"/>
+<rect x="35" y="5" width="5" height="5" fill="black"/><rect x="45" y="5" width="5" height="5" fill="black"/><rect x="55" y="5" width="5" height="5" fill="black"/>
+<rect x="35" y="15" width="5" height="5" fill="black"/><rect x="50" y="15" width="5" height="5" fill="black"/><rect x="60" y="15" width="5" height="5" fill="black"/>
+<rect x="35" y="25" width="5" height="5" fill="black"/><rect x="45" y="25" width="5" height="5" fill="black"/>
+<rect x="35" y="35" width="5" height="5" fill="black"/><rect x="45" y="35" width="5" height="5" fill="black"/><rect x="55" y="35" width="5" height="5" fill="black"/><rect x="65" y="35" width="5" height="5" fill="black"/><rect x="75" y="35" width="5" height="5" fill="black"/><rect x="85" y="35" width="5" height="5" fill="black"/><rect x="5" y="35" width="5" height="5" fill="black"/>
+<rect x="15" y="45" width="5" height="5" fill="black"/><rect x="25" y="45" width="5" height="5" fill="black"/><rect x="45" y="45" width="5" height="5" fill="black"/><rect x="65" y="45" width="5" height="5" fill="black"/><rect x="85" y="45" width="5" height="5" fill="black"/>
+<rect x="5" y="55" width="5" height="5" fill="black"/><rect x="25" y="55" width="5" height="5" fill="black"/><rect x="35" y="55" width="5" height="5" fill="black"/><rect x="55" y="55" width="5" height="5" fill="black"/><rect x="75" y="55" width="5" height="5" fill="black"/>
+<rect x="35" y="65" width="5" height="5" fill="black"/><rect x="45" y="65" width="5" height="5" fill="black"/><rect x="65" y="65" width="5" height="5" fill="black"/><rect x="85" y="65" width="5" height="5" fill="black"/>
+<rect x="35" y="75" width="5" height="5" fill="black"/><rect x="55" y="75" width="5" height="5" fill="black"/><rect x="75" y="75" width="5" height="5" fill="black"/><rect x="85" y="75" width="5" height="5" fill="black"/>
+<rect x="45" y="85" width="5" height="5" fill="black"/><rect x="65" y="85" width="5" height="5" fill="black"/><rect x="85" y="85" width="5" height="5" fill="black"/>
+<rect x="70" y="70" width="25" height="25" fill="black"/><rect x="75" y="75" width="15" height="15" fill="white"/><rect x="78" y="78" width="9" height="9" fill="black"/>
+</svg>
+</div>
+<div class="mt-5 text-center">
+<div class="text-base text-t3 tracking-tight">Zone: <span class="text-t1">Limbe Market Area</span></div>
+<div class="text-3xl font-bold text-emerald mt-3 tracking-tightest">MWK 500<span class="text-md text-t3">/hour</span></div>
+</div>
+</div>
+</div>
+<div class="card reveal">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-list-check" aria-hidden="true"></i>Session Flow</div>
+<button type="button" class="btn bp bsm" id="btn-citizen"><i class="fa-solid fa-play" aria-hidden="true"></i>Run Demo</button>
+</div>
+<div class="cb">
+<div id="citizen-steps">
+<div class="fs" data-step="1"><div class="fsn">1</div><div><div class="text-md font-medium tracking-tight">QR Code Scanned</div><div class="text-sm text-t3 mt-2">Camera opens, bay detected</div></div></div>
+<div class="fs" data-step="2"><div class="fsn">2</div><div><div class="text-md font-medium tracking-tight">Bay Info Loaded</div><div class="text-sm text-t3 mt-2">Zone, rate, availability</div></div></div>
+<div class="fs" data-step="3"><div class="fsn">3</div><div><div class="text-md font-medium tracking-tight">Duration Selected</div><div class="text-sm text-t3 mt-2">1 to 8 hours</div></div></div>
+<div class="fs" data-step="4"><div class="fsn">4</div><div><div class="text-md font-medium tracking-tight">Session Created</div><div class="text-sm text-t3 mt-2">Timer starts, proceed to payment</div></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="card reveal mt-6">
+<div class="ch"><div class="ct"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Citizen Phone View</div></div>
+<div class="cb flex justify-center p-8">
+<div class="phone">
+<div class="notch"></div>
+<div class="screen flex items-center justify-center" id="phone-content" style="min-height:380px">
+<div class="text-center text-t3 text-md">
+<i class="fa-solid fa-camera block mb-4" style="font-size:36px" aria-hidden="true"></i>
+Tap "Run Demo" to simulate
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment -->
+<div class="sec" id="sec-payment">
+<div class="sh reveal"><h2>Scenario 2 - Mobile Money Integration</h2><p>Seamless payment processing across Malawi's leading mobile money providers</p></div>
+<div class="g g3 reveal-stagger mb-8">
+<div class="card" style="border-color:rgba(234,84,85,0.2)">
+<div class="cb flex items-center gap-4">
+<div class="icon-box bg-red-soft text-red"><i class="fa-solid fa-satellite-dish" aria-hidden="true"></i></div>
+<div class="flex-1 min-w-0"><div class="text-lg font-semibold tracking-tight">Airtel Money</div><div class="text-sm text-emerald mt-3">● Sandbox Connected</div></div>
+<span class="pill pg">Active</span>
+</div>
+</div>
+<div class="card" style="border-color:rgba(59,130,246,0.2)">
+<div class="cb flex items-center gap-4">
+<div class="icon-box" style="background:rgba(59,130,246,0.12);color:#3b82f6"><i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i></div>
+<div class="flex-1 min-w-0"><div class="text-lg font-semibold tracking-tight">TNM Mpamba</div><div class="text-sm text-emerald mt-3">● Sandbox Connected</div></div>
+<span class="pill pg">Active</span>
+</div>
+</div>
+<div class="card" style="border-color:rgba(40,199,111,0.2)">
+<div class="cb flex items-center gap-4">
+<div class="icon-box bg-emerald-soft text-emerald"><i class="fa-solid fa-coins" aria-hidden="true"></i></div>
+<div class="flex-1 min-w-0"><div class="text-lg font-semibold tracking-tight">MyCash</div><div class="text-sm text-emerald mt-3">● Sandbox Connected</div></div>
+<span class="pill pg">Active</span>
+</div>
+</div>
+</div>
+<div class="g g2">
+<div class="card reveal">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-credit-card" aria-hidden="true"></i>Payment Flow</div>
+<button type="button" class="btn bp bsm" id="btn-payment"><i class="fa-solid fa-play" aria-hidden="true"></i>Run Demo</button>
+</div>
+<div class="cb">
+<div id="payment-steps">
+<div class="fs" data-step="1"><div class="fsn">1</div><div><div class="text-md font-medium tracking-tight">Select Provider</div><div class="text-sm text-t3 mt-2">Airtel / TNM / MyCash</div></div></div>
+<div class="fs" data-step="2"><div class="fsn">2</div><div><div class="text-md font-medium tracking-tight">Enter Phone</div><div class="text-sm text-t3 mt-2">+265 XXX XXX XXX</div></div></div>
+<div class="fs" data-step="3"><div class="fsn">3</div><div><div class="text-md font-medium tracking-tight">API Request Sent</div><div class="text-sm text-t3 mt-2">POST /api/payment/initiate</div></div></div>
+<div class="fs" data-step="4"><div class="fsn">4</div><div><div class="text-md font-medium tracking-tight">PUSH to Phone</div><div class="text-sm text-t3 mt-2">User confirms with PIN</div></div></div>
+<div class="fs" data-step="5"><div class="fsn">5</div><div><div class="text-md font-medium tracking-tight">Webhook Callback</div><div class="text-sm text-t3 mt-2">Payment confirmed</div></div></div>
+<div class="fs" data-step="6"><div class="fsn">6</div><div><div class="text-md font-medium tracking-tight">SMS Receipt</div><div class="text-sm text-t3 mt-2">Digital receipt via Twilio</div></div></div>
+</div>
+</div>
+</div>
+<div class="card reveal">
+<div class="ch"><div class="ct"><i class="fa-solid fa-terminal" aria-hidden="true"></i>Payment Terminal</div></div>
+<div class="cb">
+<div class="term" id="payment-terminal" style="min-height:320px">
+<div class="thd"><div class="tdt" style="background:#ea5455"></div><div class="tdt" style="background:#f59e0b"></div><div class="tdt" style="background:#28c76f"></div></div>
+<div id="payment-display" class="text-t3">Waiting for payment initiation...</div>
+</div>
+</div>
+</div>
+</div>
+<div class="card reveal mt-6">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-phone" aria-hidden="true"></i>USSD Fallback - Africa's Talking</div>
+<button type="button" class="btn bs bsm" id="btn-ussd"><i class="fa-solid fa-dial-high" aria-hidden="true"></i>Simulate USSD</button>
+</div>
+<div class="cb">
+<div class="g g2">
+<div class="term" id="ussd-log" style="max-height:220px;overflow-y:auto">
+<div class="thd"><div class="tdt" style="background:#ea5455"></div><div class="tdt" style="background:#f59e0b"></div><div class="tdt" style="background:#28c76f"></div></div>
+<span class="text-t3">Dial *384*1# to begin...</span>
+</div>
+<div id="ussd-menu">
+<div class="p-5 rounded-md" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd)">
+<div class="text-base text-emerald mb-3 font-semibold tracking-tight">Welcome to BCC Parking</div>
+<div class="text-base text-t2 leading-relaxed tracking-tight">1. Start Parking Session<br>2. Extend Session<br>3. Check Balance<br>4. Report Issue</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Enforcement -->
+<div class="sec" id="sec-enforcement">
+<div class="sh reveal"><h2>Scenario 3 - Enforcement Operations</h2><p>Offline-capable field operations with automatic sync and GPS tracking</p></div>
+<div class="g g2">
+<div class="card reveal">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-user-shield" aria-hidden="true"></i>Officer Dashboard</div>
+<div class="flex items-center gap-3 flex-shrink-0">
+<span id="net-dot" style="width:9px;height:9px;border-radius:50%;background:var(--emerald);transition:all var(--dur)"></span>
+<span id="net-st" class="text-base text-emerald tracking-tight" style="transition:all var(--dur)">Online</span>
+<button type="button" class="btn bg bsm" id="btn-net"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>Toggle</button>
+</div>
+</div>
+<div class="cb">
+<label class="text-sm text-t3 block mb-2 font-medium" style="letter-spacing:0.02em;text-transform:uppercase">License Plate</label>
+<div class="flex gap-3 mb-6">
+<input type="text" class="inp" id="plate-inp" value="MBZ 4521" placeholder="e.g., MBZ 4521" aria-label="License plate">
+<button type="button" class="btn bp bsm" id="btn-scan-plate"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Verify</button>
+</div>
+<div id="veh-res" class="hidden">
+<div class="p-5 rounded-md mb-5" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd);transition:all var(--dur)">
+<div class="flex justify-between items-center mb-4 gap-3" style="flex-wrap:wrap">
+<span class="font-mono font-bold tracking-tightest" id="r-plate" style="font-size:20px">MBZ 4521</span>
+<span id="r-status" class="pill pg">PAID</span>
+</div>
+<div class="g g2-inner text-base">
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Owner</span><div id="r-owner" class="text-t1 mt-3 font-medium">J. Banda</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Vehicle</span><div id="r-vehicle" class="text-t1 mt-3 font-medium">Toyota Corolla</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Session</span><div id="r-session" class="text-t1 mt-3 font-mono" style="font-size:12px">SES-2024-0847</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Expires</span><div id="r-expires" class="text-t1 mt-3 font-medium">14:30 (2h 15m)</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Bay</span><div id="r-bay" class="text-t1 mt-3 font-medium">LIM-001</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Payment</span><div id="r-payment" class="text-t1 mt-3 font-medium">Airtel Money</div></div>
+</div>
+</div>
+<div id="ticket-sec" class="hidden">
+<div class="p-5 rounded-md" style="background:rgba(234,84,85,0.06);border:1px solid rgba(234,84,85,0.2);transition:all var(--dur)">
+<div class="text-md font-semibold text-red mb-3 tracking-tight flex items-center gap-2">
+<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Issue Violation
+</div>
+<select class="inp mb-3" id="viol-type" aria-label="Violation type">
+<option>Expired Session</option><option>No Valid Session</option><option>Wrong Bay</option><option>Overtime (>30 min)</option>
+</select>
+<div class="flex gap-3">
+<button type="button" class="btn bd bsm flex-1" id="btn-ticket"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i>Issue Ticket</button>
+<button type="button" class="btn bk bsm flex-1" id="btn-fine"><i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>Collect Fine</button>
+</div>
+</div>
+</div>
+</div>
+<div id="off-queue" class="hidden mt-5 p-4 rounded-md" style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);transition:all var(--dur)">
+<div class="text-base font-semibold text-amber mb-3 tracking-tight flex items-center gap-2">
+<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>Offline Queue (<span id="q-count">0</span>)
+</div>
+<div id="q-items" class="text-sm text-t3 tracking-tight"></div>
+<button type="button" class="btn bsm mt-3 w-full hidden" id="btn-sync" style="background:var(--amber);color:#000;transition:all var(--dur)">
+<i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>Sync Now
+</button>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="card reveal mb-6">
+<div class="ch"><div class="ct"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Officer GPS Tracking</div></div>
+<div class="cb p-4"><div id="off-map" class="map" style="height:240px"></div></div>
+</div>
+<div class="card reveal">
+<div class="ch"><div class="ct"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>Recent Activity</div></div>
+<div class="cb">
+<div class="av"><div class="ad" style="background:var(--emerald)"></div><div><div class="at">Verified MBZ 4521 - Paid</div><div class="am">2 min ago • LIM-001</div></div></div>
+<div class="av"><div class="ad" style="background:var(--red)"></div><div><div class="at">Ticket issued - MDX 7823</div><div class="am">15 min ago • CBD-005</div></div></div>
+<div class="av"><div class="ad" style="background:var(--cyan)"></div><div><div class="at">Fine collected - MWK 5,000</div><div class="am">32 min ago • LIM-003</div></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Back-Office -->
+<div class="sec" id="sec-backoffice">
+<div class="sh reveal"><h2>Back-Office - Finance Review</h2><p>Real-time revenue tracking, reconciliation, and audit trails</p></div>
+<div class="g g4 reveal-stagger mb-8">
+<div class="mc e"><div class="ml">Today's Revenue</div><div class="mv text-emerald">847.5K</div><div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">MWK</div><div class="mx up"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i> 12% vs yesterday</div></div>
+<div class="mc p"><div class="ml">Active Sessions</div><div class="mv text-purple">127</div><div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">Across 5 zones</div><div class="mx up">↑ 8 from last hour</div></div>
+<div class="mc o"><div class="ml">Tickets Issued</div><div class="mv text-accent">23</div><div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">MWK 115,000 collected</div><div class="mx dn"><i class="fa-solid fa-arrow-trend-down" aria-hidden="true"></i> 3 from yesterday</div></div>
+<div class="mc c"><div class="ml">Reconciliation</div><div class="mv text-cyan">98.7%</div><div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">2 anomalies flagged</div><div class="mx up">Target: 99%+</div></div>
+</div>
+<div class="g g2 reveal-stagger mb-8">
+<div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-chart-column" aria-hidden="true"></i>Revenue by Zone</div><span class="pill pp">Today</span></div><div class="cb"><canvas id="revChart" height="200"></canvas></div></div>
+<div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-chart-line" aria-hidden="true"></i>Collections Trend</div><span class="pill pc">7 Days</span></div><div class="cb"><canvas id="trendChart" height="200"></canvas></div></div>
+</div>
+<div class="card reveal mb-8">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>Reconciliation Report</div>
+<button type="button" class="btn bs bsm" id="btn-pdf"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i>Export PDF</button>
+</div>
+<div class="cb p-0">
+<div class="th-wrap">
+<table>
+<thead><tr><th>Date</th><th>Zone</th><th>Sessions</th><th>Expected</th><th>Collected</th><th>Variance</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>2024-01-15</td><td>Limbe CBD</td><td class="mono">89</td><td class="mono">445,000</td><td class="mono">445,000</td><td class="text-emerald mono">0</td><td><span class="pill pg"><i class="fa-solid fa-check icon-sm" aria-hidden="true"></i> Matched</span></td></tr>
+<tr><td>2024-01-15</td><td>Blantyre CBD</td><td class="mono">156</td><td class="mono">780,000</td><td class="mono">780,000</td><td class="text-emerald mono">0</td><td><span class="pill pg"><i class="fa-solid fa-check icon-sm" aria-hidden="true"></i> Matched</span></td></tr>
+<tr style="background:rgba(234,84,85,0.04)"><td>2024-01-15</td><td>Limbe Market</td><td class="mono">67</td><td class="mono">335,000</td><td class="mono">301,500</td><td class="text-red mono">-33,500</td><td><span class="pill pr"><i class="fa-solid fa-triangle-exclamation icon-sm" aria-hidden="true"></i> Anomaly</span></td></tr>
+<tr><td>2024-01-15</td><td>Chilobwe</td><td class="mono">34</td><td class="mono">170,000</td><td class="mono">170,000</td><td class="text-emerald mono">0</td><td><span class="pill pg"><i class="fa-solid fa-check icon-sm" aria-hidden="true"></i> Matched</span></td></tr>
+<tr style="background:rgba(245,158,11,0.04)"><td>2024-01-15</td><td>Naperi</td><td class="mono">45</td><td class="mono">225,000</td><td class="mono">247,500</td><td class="text-amber mono">+22,500</td><td><span class="pill pa"><i class="fa-solid fa-circle-exclamation icon-sm" aria-hidden="true"></i> Review</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="card reveal">
+<div class="ch"><div class="ct"><i class="fa-solid fa-list-check" aria-hidden="true"></i>Audit Trail</div></div>
+<div class="cb" style="max-height:280px;overflow-y:auto">
+<div class="av"><div class="ad" style="background:var(--cyan)"></div><div><div class="at"><span class="text-cyan text-sm font-mono">14:32:01</span> &nbsp;PAYMENT - MWK 2,000 via Airtel Money (SES-2024-0892)</div></div></div>
+<div class="av"><div class="ad" style="background:var(--emerald)"></div><div><div class="at"><span class="text-emerald text-sm font-mono">14:31:45</span> &nbsp;SESSION - Bay LIM-003, Vehicle MDX 1234</div></div></div>
+<div class="av"><div class="ad" style="background:var(--red)"></div><div><div class="at"><span class="text-red text-sm font-mono">14:30:22</span> &nbsp;VIOLATION - TKT-2024-0156, Officer O-042, Bay CBD-007</div></div></div>
+<div class="av"><div class="ad" style="background:var(--purple)"></div><div><div class="at"><span class="text-purple text-sm font-mono">14:29:10</span> &nbsp;SYNC - 3 violations, 2 verifications (Officer O-042)</div></div></div>
+<div class="av"><div class="ad" style="background:var(--amber)"></div><div><div class="at"><span class="text-amber text-sm font-mono">14:28:55</span> &nbsp;ALERT - Revenue anomaly: Limbe Market -10% below avg</div></div></div>
+</div>
+</div>
+</div>
+<!-- Executive KPIs -->
+<div class="sec" id="sec-executive">
+<div class="sh reveal"><h2>Executive KPIs</h2><p>High-level performance metrics and geographic insights for strategic decision-making</p></div>
+<div class="g g4 reveal-stagger mb-8">
+<div class="mc o">
+<div class="mi bg-accent-soft text-accent"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i></div>
+<div class="ml">Monthly Revenue</div>
+<div class="mv text-accent" data-mwk="12400000" data-format="short">MWK 12.4M</div>
+<div class="mx up"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i> 18% MoM growth</div>
+</div>
+<div class="mc p">
+<div class="mi bg-purple-soft text-purple"><i class="fa-solid fa-square-parking" aria-hidden="true"></i></div>
+<div class="ml">Avg Occupancy</div>
+<div class="mv text-purple">87%</div>
+<div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">Peak: 94%</div>
+<div class="pb mt-3"><div class="pf" style="width:87%;background:linear-gradient(90deg,var(--purple),var(--cyan))"></div></div>
+</div>
+<div class="mc e">
+<div class="mi bg-emerald-soft text-emerald"><i class="fa-solid fa-bolt" aria-hidden="true"></i></div>
+<div class="ml">System Uptime</div>
+<div class="mv text-emerald">99.9%</div>
+<div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">Last 30 days</div>
+<div class="pb mt-3"><div class="pf" style="width:99.9%;background:var(--emerald)"></div></div>
+</div>
+<div class="mc c">
+<div class="mi bg-cyan-soft text-cyan"><i class="fa-solid fa-star" aria-hidden="true"></i></div>
+<div class="ml">Citizen Satisfaction</div>
+<div class="mv text-cyan">4.6<span class="text-t3" style="font-size:20px">/5</span></div>
+<div class="text-sm text-t3 mt-3" style="letter-spacing:0.02em">n=1,247 responses</div>
+<div class="mt-3 text-cyan" style="font-size:14px;letter-spacing:2px">
+<i class="fa-solid fa-star" aria-hidden="true"></i><i class="fa-solid fa-star" aria-hidden="true"></i><i class="fa-solid fa-star" aria-hidden="true"></i><i class="fa-solid fa-star" aria-hidden="true"></i><i class="fa-solid fa-star-half-stroke" aria-hidden="true"></i>
+</div>
+</div>
+</div>
+<div class="card reveal mb-8">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>Revenue Heatmap - Blantyre</div>
+<span class="pill bg-accent-soft text-accent" style="border:1px solid rgba(74,128,245,0.2)"><i class="fa-solid fa-circle icon-xs" aria-hidden="true"></i> Live</span>
+</div>
+<div class="cb p-4"><div id="map" class="map" style="height:340px"></div></div>
+</div>
+<div class="g g2 reveal-stagger">
+<div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-user-group" aria-hidden="true"></i>Officer Productivity</div></div><div class="cb"><canvas id="offChart" height="200"></canvas></div></div>
+<div class="card"><div class="ch"><div class="ct"><i class="fa-solid fa-credit-card" aria-hidden="true"></i>Payment Methods</div></div><div class="cb"><canvas id="payChart" height="200"></canvas></div></div>
+</div>
+</div>
+<!-- Revenue Assurance -->
+<div class="sec" id="sec-assurance">
+<div class="sh reveal"><h2>Revenue Assurance</h2><p>Automated anomaly detection and audit trail investigation</p></div>
+<div class="g g3 reveal-stagger mb-8">
+<div class="mc e">
+<div class="mi bg-emerald-soft text-emerald"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+<div class="ml">Transactions Verified</div>
+<div class="mv text-emerald">2,847</div>
+<div class="text-sm text-t3 mt-5" style="letter-spacing:0.02em">Last 24 hours</div>
+</div>
+<div class="mc o">
+<div class="mi bg-red-soft text-red"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
+<div class="ml">Anomalies Detected</div>
+<div class="mv text-red">7</div>
+<div class="text-sm text-red mt-5" style="letter-spacing:0.02em">3 critical • 4 warnings</div>
+</div>
+<div class="mc p">
+<div class="mi bg-amber-soft text-amber"><i class="fa-solid fa-sack-xmark" aria-hidden="true"></i></div>
+<div class="ml">Potential Revenue Loss</div>
+<div class="mv text-amber">MWK 89.5K</div>
+<div class="text-sm text-t3 mt-5" style="letter-spacing:0.02em">Under investigation</div>
+</div>
+</div>
+<div class="card reveal mb-8">
+<div class="ch">
+<div class="ct"><i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i>Anomaly Detection Engine</div>
+<button type="button" class="btn bp bsm" id="btn-scan-anomaly"><i class="fa-solid fa-radar" aria-hidden="true"></i>Run Scan</button>
+</div>
+<div class="cb flex flex-col gap-4">
+<div class="ai">
+<div class="flex justify-between items-center mb-3 gap-3" style="flex-wrap:wrap">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-circle text-red icon-dot" aria-hidden="true"></i>
+<span class="text-md font-semibold tracking-tight">CRITICAL: Revenue Mismatch - Limbe Market</span>
+</div>
+<span class="text-sm text-t3" style="letter-spacing:0.02em">14:15</span>
+</div>
+<div class="g g4 gap-4 text-base">
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Expected</span><div class="font-semibold mt-3">MWK 335,000</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Collected</span><div class="font-semibold mt-3">MWK 301,500</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Variance</span><div class="font-semibold mt-3 text-red">-MWK 33,500</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Sessions</span><div class="font-semibold mt-3">12</div></div>
+</div>
+<button type="button" class="btn bg bsm mt-3 text-accent" data-drill="limbe"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i>Drill Down Audit Trail</button>
+</div>
+<div class="ai">
+<div class="flex justify-between items-center mb-3 gap-3" style="flex-wrap:wrap">
+<div class="flex items-center gap-3">
+<i class="fa-solid fa-circle text-red icon-dot" aria-hidden="true"></i>
+<span class="text-md font-semibold tracking-tight">CRITICAL: Duplicate Payment Detected</span>
+</div>
+<span class="text-sm text-t3" style="letter-spacing:0.02em">13:42</span>
+</div>
+<div class="g g4 gap-4 text-base">
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Transaction</span><div class="font-semibold mt-3 font-mono" style="font-size:12px">TXN-8847</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Amount</span><div class="font-semibold mt-3">MWK 4,000</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Provider</span><div class="font-semibold mt-3">TNM Mpamba</div></div>
+<div><span class="text-sm text-t3" style="letter-spacing:0.02em">Time Gap</span><div class="font-semibold mt-3 text-red">3 seconds</div></div>
+</div>
+<button type="button" class="btn bg bsm mt-3 text-accent" data-drill="duplicate"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i>Drill Down Audit Trail</button>
+</div>
+<div class="ai w">
+<div class="flex items-center gap-3 mb-2">
+<i class="fa-solid fa-circle text-amber icon-dot" aria-hidden="true"></i>
+<span class="text-md font-semibold tracking-tight">WARNING: Unusual Pattern - Naperi Zone</span>
+</div>
+<p class="text-base text-t3 leading-normal tracking-tight">Collections 10% above expected. Possible overpayment or system error. Requires manual review.</p>
+</div>
+<div class="ai w">
+<div class="flex items-center gap-3 mb-2">
+<i class="fa-solid fa-circle text-amber icon-dot" aria-hidden="true"></i>
+<span class="text-md font-semibold tracking-tight">WARNING: Late Webhook Callbacks</span>
+</div>
+<p class="text-base text-t3 leading-normal tracking-tight">5 callbacks received >30s late from Airtel Money sandbox. May indicate network issues.</p>
+</div>
+</div>
+</div>
+<div class="card reveal hidden" id="drill-panel">
+<div class="ch"><div class="ct"><i class="fa-solid fa-file-lines" aria-hidden="true"></i>Drill-Down: Audit Trail</div></div>
+<div class="cb p-0">
+<div class="th-wrap">
+<table>
+<thead><tr><th>Timestamp</th><th>Event</th><th>Actor</th><th>Details</th><th>IP</th></tr></thead>
+<tbody id="drill-data"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<div class="tc" id="toast-c" aria-live="polite" aria-atomic="false"></div>
+<!-- External Libraries (synchronous, no defer) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+(function(){
+'use strict';
+// ============ UTILITIES ============
+function formatMWK(value, opts){
+opts = opts || {};
+const short = opts.short === true;
+const sign = opts.sign === true;
+const abs = Math.abs(value);
+let formatted;
+if(short){
+if(abs >= 1000000) formatted = 'MWK ' + (value/1000000).toFixed(1) + 'M';
+else if(abs >= 1000) formatted = 'MWK ' + (value/1000).toFixed(1) + 'K';
+else formatted = 'MWK ' + value.toLocaleString('en-MW');
+}else{
+formatted = 'MWK ' + value.toLocaleString('en-MW');
+}
+if(sign && value > 0) formatted = '+' + formatted;
+return formatted;
+}
+function escapeHtml(str){
+return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function $(id){ return document.getElementById(id); }
+function safeBind(id, fn){
+const el = $(id);
+if(el) el.addEventListener('click', fn);
+else console.warn('Element not found:', id);
+}
+// ============ LOADER ============
+let libsReady = false;
+let minTimeMet = false;
+function checkReady(){
+if(libsReady && minTimeMet) hideLoader();
+}
+function hideLoader(){
+const loader = $('loader');
+const app = $('app');
+if(loader) loader.classList.add('hidden');
+if(app) app.classList.add('ready');
+document.body.classList.remove('loading');
+}
+// Check libraries
+function checkLibs(){
+if(typeof Chart !== 'undefined' && typeof L !== 'undefined'){
+libsReady = true;
+checkReady();
+}else{
+setTimeout(checkLibs, 100);
+}
+}
+checkLibs();
+setTimeout(() => { minTimeMet = true; checkReady(); }, 1200);
+setTimeout(() => { if(!libsReady){ console.warn('Library timeout'); libsReady = true; checkReady(); } }, 5000);
+// ============ STATE ============
+const state = {
+sec: 'overview',
+online: navigator.onLine,
+queue: [],
+charts: {},
+maps: { exec: null, off: null },
+init: { bo: false, ex: false, om: false }
+};
+const titles = {
+overview: ['Executive Overview', 'Blantyre City Council • AVPMS'],
+citizen: ['Citizen Parking Flow', 'Scenario 1 • Customer Experience'],
+payment: ['Mobile Money Integration', 'Scenario 2 • Payment Processing'],
+enforcement: ['Enforcement Operations', 'Scenario 3 • Field Operations'],
+backoffice: ['Back-Office', 'Finance & Reconciliation'],
+executive: ['Executive KPIs', 'Performance Dashboard'],
+assurance: ['Revenue Assurance', 'Anomaly Detection']
+};
+const timers = {};
+// ============ TOAST ============
+const MAX_TOASTS = 3;
+function toast(m, t){
+t = t || 'i';
+const c = $('toast-c');
+if(!c) return;
+const existing = c.querySelectorAll('.toast');
+if(existing.length >= MAX_TOASTS){
+const oldest = existing[0];
+oldest.style.opacity = '0';
+oldest.style.transform = 'translateX(120px)';
+oldest.style.transition = 'all 0.3s';
+setTimeout(() => oldest.remove(), 300);
+}
+const el = document.createElement('div');
+el.className = 'toast ' + t;
+if(t === 'e') el.setAttribute('role', 'alert');
+const ic = {s:'fa-circle-check', e:'fa-circle-xmark', i:'fa-circle-info'};
+el.innerHTML = '<i class="fa-solid ' + (ic[t]||ic.i) + '" aria-hidden="true"></i><span>' + escapeHtml(m) + '</span>';
+c.appendChild(el);
+setTimeout(() => {
+el.style.opacity = '0';
+el.style.transform = 'translateX(120px)';
+el.style.transition = 'all 0.6s cubic-bezier(0.16,1,0.3,1)';
+setTimeout(() => el.remove(), 600);
+}, 3500);
+}
+// ============ TIMER MANAGEMENT ============
+function clrT(n){ if(timers[n]){ clearInterval(timers[n]); clearTimeout(timers[n]); timers[n] = null; } }
+function clrDemo(){ ['cit','pay','uss','scan'].forEach(k => { Object.keys(timers).filter(t => t.startsWith(k)).forEach(clrT); }); }
+// ============ LOCALSTORAGE ============
+const QK = 'bcc-q';
+function loadQ(){ try{ return JSON.parse(localStorage.getItem(QK) || '[]'); }catch(e){ return []; } }
+function saveQ(){ try{ localStorage.setItem(QK, JSON.stringify(state.queue)); }catch(e){ toast('Offline queue could not be saved', 'e'); } }
+// ============ REVEAL OBSERVER ============
+function initReveal(){
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if(entry.isIntersecting){
+entry.target.classList.add('visible');
+observer.unobserve(entry.target);
+}
+});
+}, {threshold:0.1, rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+}
+// ============ NAVIGATION ============
+function showSec(name){
+const sec = $('sec-' + name);
+if(!sec) return;
+clrDemo();
+document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+sec.classList.add('active');
+document.querySelectorAll('.nbtn').forEach(n => n.classList.remove('active'));
+const nb = document.querySelector('[data-sec="' + name + '"]');
+if(nb) nb.classList.add('active');
+state.sec = name;
+const t = titles[name] || ['Dashboard',''];
+const ptitle = $('ptitle');
+const psub = $('psub');
+if(ptitle) ptitle.textContent = t[0];
+if(psub) psub.textContent = t[1];
+const sm = $('settings-menu');
+const sb = $('settings-btn');
+if(sm) sm.classList.remove('open');
+if(sb) sb.setAttribute('aria-expanded', 'false');
+window.scrollTo({top:0, behavior:'smooth'});
+setTimeout(() => {
+sec.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+el.classList.remove('visible');
+setTimeout(() => el.classList.add('visible'), 50);
+});
+}, 100);
+setTimeout(() => {
+if(name === 'backoffice') initBO();
+else if(name === 'executive'){ initEX(); initMap(); }
+else if(name === 'enforcement') initOMap();
+}, 250);
+}
+function chkLib(){
+if(typeof Chart === 'undefined'){ toast('Chart.js failed to load', 'e'); return false; }
+if(typeof L === 'undefined'){ toast('Leaflet failed to load', 'e'); return false; }
+return true;
+}
+// ============ DEMOS ============
+function runCit(){
+clrT('cit');
+const btn = $('btn-citizen');
+const steps = document.querySelectorAll('#citizen-steps .fs');
+const ph = $('phone-content');
+if(!btn || !ph) return;
+btn.disabled = true;
+btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Running...';
+steps.forEach(s => s.classList.remove('a','d'));
+const msgs = [
+'<div class="text-center"><i class="fa-solid fa-camera block mb-4 text-t2" style="font-size:44px" aria-hidden="true"></i><div class="text-lg font-semibold mb-2 tracking-tight">Camera Active</div><div class="text-base text-t3">Scanning for QR code...</div><div class="mt-5 p-8 rounded-md text-accent text-base" style="border:2px dashed rgba(74,128,245,0.35)"><i class="fa-solid fa-expand" aria-hidden="true"></i> Viewfinder</div></div>',
+'<div class="text-left"><div class="text-2xl font-bold mb-4 tracking-tightest"><i class="fa-solid fa-square-parking text-accent" aria-hidden="true"></i> Bay LIM-001</div><div class="text-md text-t2 leading-relaxed tracking-tight"><span class="text-t3">Zone:</span> Limbe Market<br><span class="text-t3">Rate:</span> <span class="text-emerald font-semibold">MWK 500/hr</span><br><span class="text-t3">Available:</span> 8/12 bays</div></div>',
+'<div class="text-left"><div class="text-2xl font-bold mb-4 tracking-tightest"><i class="fa-solid fa-clock text-accent" aria-hidden="true"></i> Duration</div><div class="g g2-inner gap-3 mt-3"><div class="p-3 rounded-md text-center text-md font-semibold bg-accent-soft text-accent" style="border:1px solid var(--accent)">1h<br>MWK 500</div><div class="p-3 rounded-md text-center text-md" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd)">2h<br><span class="text-t3">MWK 1,000</span></div><div class="p-3 rounded-md text-center text-md" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd)">3h<br><span class="text-t3">MWK 1,500</span></div><div class="p-3 rounded-md text-center text-md" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd)">4h<br><span class="text-t3">MWK 2,000</span></div></div></div>',
+'<div class="text-center p-6"><i class="fa-solid fa-circle-check block mb-4 text-emerald" style="font-size:52px" aria-hidden="true"></i><div class="text-2xl font-bold text-emerald mb-3 tracking-tightest">Session Started!</div><div class="text-base text-t3 leading-relaxed">Session ID: SES-2024-0893<br>Expires: 15:35 (1 hour)<br><span class="text-accent">Proceed to payment <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></div></div>'
+];
+let i = 0;
+timers.cit = setInterval(() => {
+if(i > 0){
+steps[i-1].classList.remove('a');
+steps[i-1].classList.add('d');
+const n = steps[i-1].querySelector('.fsn');
+if(n) n.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+}
+if(i < steps.length){
+steps[i].classList.add('a');
+ph.innerHTML = msgs[i];
+i++;
+}else{
+clrT('cit');
+btn.disabled = false;
+btn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i> Run Demo';
+toast('Session SES-2024-0893 created', 's');
+}
+}, 2000);
+}
+function runPay(){
+clrT('pay');
+const btn = $('btn-payment');
+const d = $('payment-display');
+const steps = document.querySelectorAll('#payment-steps .fs');
+if(!btn || !d) return;
+btn.disabled = true;
+btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Processing...';
+steps.forEach(s => s.classList.remove('a','d'));
+const msgs = [
+`<span class="text-accent"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Selecting provider...</span>
+<div class="flex gap-3 mt-3" style="flex-wrap:wrap"><span class="py-2 px-4 rounded-full text-sm bg-red-soft text-red" style="border:1px solid rgba(234,84,85,0.35)"><i class="fa-solid fa-satellite-dish" aria-hidden="true"></i> Airtel</span><span class="py-2 px-4 rounded-full text-sm" style="background:rgba(255,255,255,0.04)"><i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i> TNM</span><span class="py-2 px-4 rounded-full text-sm" style="background:rgba(255,255,255,0.04)"><i class="fa-solid fa-coins" aria-hidden="true"></i> MyCash</span></div>`,
+`<span class="text-accent"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Enter phone number</span>
+<div class="p-3 rounded-md text-center font-mono font-bold tracking-tightest mt-3" style="background:rgba(255,255,255,0.04);border:1px solid var(--brd);font-size:22px">+265 99 123 4567</div>`,
+`<span class="text-emerald"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> API Request Sent</span>
+<div class="p-3 rounded-md mt-3 text-sm leading-relaxed tracking-tight" style="background:rgba(255,255,255,0.04)"><span class="text-emerald">POST</span> /api/payment/initiate
+{
+provider: <span class="text-amber">"airtel"</span>,
+amount: <span class="text-cyan">500</span>,
+phone: <span class="text-amber">"+265991234567"</span>,
+session: <span class="text-amber">"SES-2024-0893"</span>
+}</div>`,
+`<span class="text-purple"><i class="fa-solid fa-bell" aria-hidden="true"></i> PUSH Notification Sent</span>
+<div class="p-4 rounded-md mt-3 text-center" style="background:rgba(255,255,255,0.04)"><div class="text-sm text-t3">Airtel Money prompt:</div><div class="text-lg mt-2 tracking-tight">"Pay MWK 500 to BCC Parking?"</div><div class="text-emerald text-base mt-2"><i class="fa-solid fa-check" aria-hidden="true"></i> PIN entered</div></div>`,
+`<span class="text-amber"><i class="fa-solid fa-plug-circle-bolt" aria-hidden="true"></i> Webhook Received</span>
+<div class="p-3 rounded-md mt-3 text-sm leading-relaxed tracking-tight" style="background:rgba(255,255,255,0.04)"><span class="text-amber">POST</span> /webhooks/airtel
+{
+status: <span class="text-emerald">"completed"</span>,
+txn_id: <span class="text-amber">"ATX-9928374"</span>,
+amount: <span class="text-cyan">500</span>
+}</div>`,
+`<div class="text-center p-3"><i class="fa-solid fa-circle-check block mb-3 text-emerald" style="font-size:44px" aria-hidden="true"></i><div class="text-2xl font-bold text-emerald tracking-tightest">Payment Successful!</div><div class="p-4 rounded-md mt-4 text-base text-left leading-relaxed tracking-tight" style="background:rgba(255,255,255,0.04)">Receipt: RCP-2024-1847<br>Amount: MWK 500<br>Session: SES-2024-0893<br><span class="text-t3"><i class="fa-solid fa-envelope" aria-hidden="true"></i> SMS sent to +265 99 123 4567</span></div></div>`
+];
+let i = 0;
+timers.pay = setInterval(() => {
+if(i > 0){
+steps[i-1].classList.remove('a');
+steps[i-1].classList.add('d');
+const n = steps[i-1].querySelector('.fsn');
+if(n) n.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+}
+if(i < steps.length){
+steps[i].classList.add('a');
+d.innerHTML = msgs[i];
+i++;
+}else{
+clrT('pay');
+btn.disabled = false;
+btn.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i> Run Demo';
+toast('Payment of MWK 500 confirmed', 's');
+}
+}, 2400);
+}
+function runUSS(){
+Object.keys(timers).filter(k => k.startsWith('uss')).forEach(clrT);
+const log = $('ussd-log');
+const menu = $('ussd-menu');
+if(!log || !menu) return;
+log.innerHTML = '<div class="thd"><div class="tdt" style="background:#ea5455"></div><div class="tdt" style="background:#f59e0b"></div><div class="tdt" style="background:#28c76f"></div></div><span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> *384*1#</span>';
+const steps = [
+{d:800, l:`<span class="text-emerald"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> BCC Parking Menu:</span>
+1. Start Session
+2. Extend
+3. Balance`},
+{d:1600, l:`<span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> 1</span>`},
+{d:2400, l:`<span class="text-emerald"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Enter Bay ID:</span>`},
+{d:3200, l:`<span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> LIM-001</span>`},
+{d:4000, l:`<span class="text-emerald"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Rate: MWK 500/hr</span>
+Duration: 1. 1hr  2. 2hr  3. 3hr`},
+{d:4800, l:`<span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> 1</span>`},
+{d:5600, l:`<span class="text-emerald"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Session SES-2024-0894 created</span>
+Pay: 1. Airtel  2. TNM  3. MyCash`},
+{d:6400, l:`<span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> 1</span>`},
+{d:7200, l:`<span class="text-emerald"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Confirm MWK 500? 1.Yes 2.No</span>`},
+{d:8000, l:`<span class="text-amber"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> 1</span>`},
+{d:8800, l:`<span class="text-emerald font-bold"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Payment received!</span>
+Session active until 15:35
+<span class="text-t3">SMS receipt sent.</span>`,
+m:`<div class="p-5 rounded-md" style="background:rgba(40,199,111,0.06);border:1px solid rgba(40,199,111,0.25);transition:all 0.6s"><div class="text-md font-semibold text-emerald mb-3 tracking-tight"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> USSD Complete</div><div class="text-base text-t3 leading-relaxed tracking-tight">Session: SES-2024-0894<br>Duration: 1 hour<br>Payment: Airtel Money</div></div>`}
+];
+steps.forEach((s, idx) => {
+timers['uss_' + idx] = setTimeout(() => {
+log.innerHTML += '<br>' + s.l;
+log.scrollTop = log.scrollHeight;
+if(s.m) menu.innerHTML = s.m;
+}, s.d);
+});
+}
+function runScan(){
+clrT('scan');
+const b = $('btn-scan-anomaly');
+if(!b) return;
+b.disabled = true;
+b.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Scanning...';
+timers.scan = setTimeout(() => {
+b.disabled = false;
+b.innerHTML = '<i class="fa-solid fa-radar" aria-hidden="true"></i> Run Scan';
+document.querySelectorAll('.ai').forEach(el => {
+el.style.transition = 'all 0.6s cubic-bezier(0.16,1,0.3,1)';
+el.style.boxShadow = '0 0 24px rgba(234,84,85,0.2)';
+setTimeout(() => el.style.boxShadow = 'none', 1400);
+});
+toast('Scan complete: 7 anomalies detected', 'i');
+}, 2200);
+}
+// ============ ENFORCEMENT ============
+function toggleNet(){
+state.online = !state.online;
+updNet();
+toast(state.online ? 'Connection restored' : 'Working offline', state.online ? 's' : 'e');
+}
+function updNet(){
+const d = $('net-dot');
+const s = $('net-st');
+const q = $('off-queue');
+const b = $('btn-sync');
+if(!d || !s || !q || !b) return;
+if(state.online){
+d.style.background = 'var(--emerald)';
+s.textContent = 'Online';
+s.style.color = 'var(--emerald)';
+b.style.display = state.queue.length > 0 ? 'block' : 'none';
+}else{
+d.style.background = 'var(--red)';
+s.textContent = 'Offline';
+s.style.color = 'var(--red)';
+q.style.display = 'block';
+b.style.display = 'none';
+}
+}
+function scanPlate(){
+const inp = $('plate-inp');
+const r = $('veh-res');
+if(!inp || !r) return;
+const p = inp.value.toUpperCase().trim();
+if(!p){ toast('Enter a plate number', 'e'); return; }
+r.style.display = 'block';
+const vehs = {
+'MBZ 4521':{o:'J. Banda', v:'Toyota Corolla', st:'PAID', sc:'pg', se:'SES-2024-0847', ex:'14:30 (2h 15m)', b:'LIM-001', p:'Airtel Money'},
+'MDX 7823':{o:'M. Chirwa', v:'Nissan AD Van', st:'EXPIRED', sc:'pr', se:'SES-2024-0812', ex:'12:15 (Expired)', b:'CBD-005', p:'TNM Mpamba'},
+'KBY 1099':{o:'A. Mwale', v:'Honda Fit', st:'NO SESSION', sc:'pa', se:'N/A', ex:'N/A', b:'Unknown', p:'N/A'}
+};
+const d = vehs[p];
+const rPlate = $('r-plate');
+const rStatus = $('r-status');
+const rOwner = $('r-owner');
+const rVehicle = $('r-vehicle');
+const rSession = $('r-session');
+const rExpires = $('r-expires');
+const rBay = $('r-bay');
+const rPayment = $('r-payment');
+const ticketSec = $('ticket-sec');
+if(!d){
+if(rPlate) rPlate.textContent = p;
+[rOwner, rVehicle, rSession, rExpires, rBay, rPayment].forEach(el => { if(el) el.textContent = 'No record'; });
+if(rStatus){
+rStatus.textContent = 'UNKNOWN';
+rStatus.className = 'pill p-muted';
+}
+if(ticketSec) ticketSec.style.display = 'none';
+toast('No record found: ' + p, 'i');
+return;
+}
+if(rPlate) rPlate.textContent = p;
+if(rOwner) rOwner.textContent = d.o;
+if(rVehicle) rVehicle.textContent = d.v;
+if(rSession) rSession.textContent = d.se;
+if(rExpires) rExpires.textContent = d.ex;
+if(rBay) rBay.textContent = d.b;
+if(rPayment) rPayment.textContent = d.p;
+if(rStatus){
+rStatus.textContent = d.st;
+rStatus.className = 'pill ' + d.sc;
+}
+if(ticketSec) ticketSec.style.display = d.st !== 'PAID' ? 'block' : 'none';
+if(d.st !== 'PAID' && !state.online){
+state.queue.push({type:'verification', plate:p, time:new Date().toLocaleTimeString()});
+saveQ();
+updQ();
+}
+}
+function issueTicket(){
+const inp = $('plate-inp');
+if(!inp) return;
+const p = inp.value;
+if(!p){ toast('No plate', 'e'); return; }
+const violType = $('viol-type');
+if(!state.online){
+state.queue.push({type:'ticket', plate:p, time:new Date().toLocaleTimeString(), viol: violType ? violType.value : ''});
+saveQ(); updQ();
+toast('Ticket queued (offline)', 'i');
+}else{
+toast('Ticket TKT-2024-' + (Math.floor(Math.random()*9000)+1000) + ' issued', 's');
+}
+}
+function collectFine(){
+const inp = $('plate-inp');
+if(!inp) return;
+const p = inp.value;
+if(!p){ toast('No plate', 'e'); return; }
+if(!state.online){
+state.queue.push({type:'fine', plate:p, time:new Date().toLocaleTimeString()});
+saveQ(); updQ();
+toast('Fine queued (offline)', 'i');
+}else{
+toast('Fine MWK 5,000 collected', 's');
+}
+}
+function updQ(){
+const c = $('q-count');
+const it = $('q-items');
+const q = $('off-queue');
+const b = $('btn-sync');
+if(!c || !it || !q || !b) return;
+c.textContent = state.queue.length;
+if(state.queue.length === 0){ q.style.display = 'none'; return; }
+q.style.display = 'block';
+it.innerHTML = state.queue.map(x => '<div class="py-2"><i class="fa-solid fa-circle icon-tiny" aria-hidden="true"></i> ' + escapeHtml(x.type) + ': ' + escapeHtml(x.plate) + ' (' + escapeHtml(x.time) + ')</div>').join('');
+b.style.display = state.online ? 'block' : 'none';
+}
+function syncQ(){
+const n = state.queue.length;
+state.queue = [];
+saveQ(); updQ();
+toast(n + ' items synced', 's');
+setTimeout(() => { const q = $('off-queue'); if(q) q.style.display = 'none'; }, 2200);
+}
+// ============ CHARTS ============
+const cd = {color:'#9ca3af', grid:'rgba(255,255,255,0.05)'};
+function mwkTick(v){ return formatMWK(v, {short:true}).replace('MWK ', ''); }
+function initBO(){
+if(state.init.bo){ Object.values(state.charts).forEach(c => c && c.resize()); return; }
+if(!chkLib()) return;
+state.init.bo = true;
+const r = $('revChart');
+if(r){
+state.charts.rev = new Chart(r.getContext('2d'), {
+type:'bar',
+data:{labels:['Limbe CBD','Blantyre CBD','Limbe Market','Chilobwe','Naperi'],
+datasets:[{data:[445000,780000,301500,170000,247500],
+backgroundColor:['rgba(74,128,245,0.65)','rgba(155,123,253,0.65)','rgba(234,84,85,0.65)','rgba(40,199,111,0.65)','rgba(34,211,238,0.65)'],
+borderRadius:8, borderSkipped:false}]},
+options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true, ticks:{color:cd.color, callback: mwkTick}, grid:{color:cd.grid}}, x:{ticks:{color:cd.color}, grid:{display:false}}}}
+});
+}
+const t = $('trendChart');
+if(t){
+state.charts.trend = new Chart(t.getContext('2d'), {
+type:'line',
+data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+datasets:[{data:[680000,720000,810000,790000,847500,920000,540000],
+borderColor:'#4a80f5', backgroundColor:'rgba(74,128,245,0.1)', fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:'#4a80f5', pointBorderColor:'#fff', pointBorderWidth:2}]},
+options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+scales:{y:{beginAtZero:true, ticks:{color:cd.color, callback: mwkTick}, grid:{color:cd.grid}}, x:{ticks:{color:cd.color}, grid:{display:false}}}}
+});
+}
+}
+function initEX(){
+if(state.init.ex){ Object.values(state.charts).forEach(c => c && c.resize()); return; }
+if(!chkLib()) return;
+state.init.ex = true;
+const o = $('offChart');
+if(o){
+state.charts.off = new Chart(o.getContext('2d'), {
+type:'bar',
+data:{labels:['O-042','O-038','O-051','O-029','O-044','O-033'],
+datasets:[
+{label:'Verifications', data:[45,38,42,35,41,33], backgroundColor:'rgba(155,123,253,0.65)', borderRadius:6},
+{label:'Tickets', data:[8,5,7,3,6,4], backgroundColor:'rgba(234,84,85,0.65)', borderRadius:6}
+]},
+options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:cd.color, boxWidth:14}}},
+scales:{y:{beginAtZero:true, ticks:{color:cd.color}, grid:{color:cd.grid}}, x:{ticks:{color:cd.color}, grid:{display:false}}}}
+});
+}
+const p = $('payChart');
+if(p){
+state.charts.pay = new Chart(p.getContext('2d'), {
+type:'doughnut',
+data:{labels:['Airtel Money','TNM Mpamba','MyCash','Cash'],
+datasets:[{data:[42,31,15,12], backgroundColor:['rgba(234,84,85,0.75)','rgba(59,130,246,0.75)','rgba(40,199,111,0.75)','rgba(245,158,11,0.75)'], borderWidth:0, cutout:'68%'}]},
+options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:cd.color, padding:18, boxWidth:14}}}}
+});
+}
+}
+// ============ MAPS ============
+function initMap(){
+if(state.maps.exec){ setTimeout(() => state.maps.exec.invalidateSize(), 250); return; }
+if(typeof L === 'undefined'){ toast('Leaflet failed to load', 'e'); return; }
+const container = $('map');
+if(!container || container.offsetHeight === 0) return;
+state.maps.exec = L.map('map', {zoomControl:false}).setView([-15.7861, 35.0058], 13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {attribution:'© CartoDB'}).addTo(state.maps.exec);
+if(typeof L.heatLayer === 'function'){
+L.heatLayer([[-15.7861,35.0058,0.9],[-15.788,35.002,0.8],[-15.784,35.008,0.7],[-15.79,35.01,0.6],[-15.782,35.004,0.85],[-15.787,35.009,0.75],[-15.785,35.001,0.65],[-15.789,35.006,0.55],[-15.783,35.007,0.95],[-15.781,35.003,0.45],[-15.786,35.012,0.7],[-15.7845,35.0045,0.8],[-15.791,35.008,0.5],[-15.7835,35.0015,0.6],[-15.7875,35.0075,0.85]], {radius:32, blur:22}).addTo(state.maps.exec);
+}
+[[-15.7861,35.0058,'Blantyre CBD','780K'],[-15.783,35.007,'Limbe Market','301K'],[-15.79,35.01,'Chilobwe','170K'],[-15.784,35.002,'Naperi','247K'],[-15.788,35.004,'Limbe CBD','445K']].forEach(z => {
+L.marker(z.slice(0,2)).addTo(state.maps.exec).bindPopup('<b>' + z[2] + '</b><br>Revenue: MWK ' + z[3]);
+});
+setTimeout(() => state.maps.exec.invalidateSize(), 250);
+}
+function initOMap(){
+if(state.maps.off){ setTimeout(() => state.maps.off.invalidateSize(), 250); return; }
+if(typeof L === 'undefined'){ toast('Leaflet failed to load', 'e'); return; }
+const container = $('off-map');
+if(!container || container.offsetHeight === 0) return;
+state.maps.off = L.map('off-map', {zoomControl:false}).setView([-15.7861, 35.0058], 15);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {attribution:'© CartoDB'}).addTo(state.maps.off);
+const rt = [[-15.7861,35.0058],[-15.7865,35.0062],[-15.787,35.0055],[-15.7875,35.0048],[-15.788,35.004],[-15.7882,35.0035]];
+L.polyline(rt, {color:'#4a80f5', weight:2.5, dashArray:'8,10', opacity:0.75}).addTo(state.maps.off);
+const oi = L.divIcon({html:'<div style="background:#4a80f5;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 16px rgba(74,128,245,0.7)"></div>', iconSize:[18,18], className:''});
+L.marker(rt[rt.length-1], {icon:oi}).addTo(state.maps.off).bindPopup('Officer O-042');
+[[-15.7861,35.0058],[-15.7863,35.006],[-15.7859,35.0056],[-15.7867,35.0053],[-15.7871,35.005]].forEach((b,i) => {
+const c = i < 3 ? '#28c76f' : '#ea5455';
+L.marker(b, {icon:L.divIcon({html:'<div style="background:' + c + ';width:10px;height:10px;border-radius:3px"></div>', iconSize:[12,12], className:''})}).addTo(state.maps.off);
+});
+setTimeout(() => state.maps.off.invalidateSize(), 250);
+}
+// ============ DRILL DOWN ============
+function drill(t){
+const p = $('drill-panel');
+const d = $('drill-data');
+if(!p || !d) return;
+p.style.display = 'block';
+if(t === 'limbe'){
+d.innerHTML = '<tr><td class="mono">14:15:02</td><td><span class="pill pr"><i class="fa-solid fa-triangle-exclamation icon-sm" aria-hidden="true"></i> ANOMALY</span></td><td>SYSTEM</td><td>Revenue variance -10% Limbe Market</td><td class="mono">127.0.0.1</td></tr><tr><td class="mono">14:12:33</td><td><span class="pill pc"><i class="fa-solid fa-money-bill icon-sm" aria-hidden="true"></i> PAYMENT</span></td><td>SYSTEM</td><td>MWK 2,000 - Airtel TXN-8823</td><td class="mono">10.0.0.1</td></tr><tr><td class="mono">14:10:15</td><td><span class="pill pa"><i class="fa-solid fa-clock icon-sm" aria-hidden="true"></i> SESSION_END</span></td><td>SYSTEM</td><td>SES-2024-0831 expired - no payment</td><td class="mono">127.0.0.1</td></tr><tr><td class="mono">14:08:44</td><td><span class="pill pc"><i class="fa-solid fa-money-bill icon-sm" aria-hidden="true"></i> PAYMENT</span></td><td>SYSTEM</td><td>MWK 1,500 - TNM TXN-4421</td><td class="mono">10.0.0.2</td></tr><tr><td class="mono">14:05:22</td><td><span class="pill pg"><i class="fa-solid fa-play icon-sm" aria-hidden="true"></i> SESSION</span></td><td>CITIZEN</td><td>SES-2024-0845 started LIM-003</td><td class="mono">192.168.1.45</td></tr><tr><td class="mono">14:02:11</td><td><span class="pill pr"><i class="fa-solid fa-xmark icon-sm" aria-hidden="true"></i> FAILED</span></td><td>SYSTEM</td><td>MWK 500 - MyCash timeout</td><td class="mono">10.0.0.3</td></tr>';
+}else{
+d.innerHTML = '<tr><td class="mono">13:42:05</td><td><span class="pill pr"><i class="fa-solid fa-copy icon-sm" aria-hidden="true"></i> DUPLICATE</span></td><td>SYSTEM</td><td>Same amount, same phone, 3s apart</td><td class="mono">127.0.0.1</td></tr><tr><td class="mono">13:42:03</td><td><span class="pill pa"><i class="fa-solid fa-plug icon-sm" aria-hidden="true"></i> WEBHOOK</span></td><td>TNM</td><td>TXN-8847 - MWK 4,000</td><td class="mono">10.0.0.2</td></tr><tr><td class="mono">13:42:00</td><td><span class="pill pa"><i class="fa-solid fa-plug icon-sm" aria-hidden="true"></i> WEBHOOK</span></td><td>TNM</td><td>TXN-8846 - MWK 4,000 (dup?)</td><td class="mono">10.0.0.2</td></tr><tr><td class="mono">13:41:55</td><td><span class="pill pc"><i class="fa-solid fa-play icon-sm" aria-hidden="true"></i> INIT</span></td><td>API</td><td>Payment for SES-2024-0839</td><td class="mono">192.168.1.22</td></tr>';
+}
+p.scrollIntoView({behavior:'smooth'});
+}
+// ============ ONLINE/OFFLINE ============
+function onOnline(){ state.online = true; updNet(); toast('Connection restored', 's'); }
+function onOffline(){ state.online = false; updNet(); toast('Connection lost', 'e'); }
+// ============ RESIZE ============
+let resizeTimer;
+window.addEventListener('resize', () => {
+clearTimeout(resizeTimer);
+resizeTimer = setTimeout(() => {
+Object.values(state.charts).forEach(c => c && c.resize());
+if(state.sec === 'executive' && state.maps.exec) state.maps.exec.invalidateSize();
+if(state.sec === 'enforcement' && state.maps.off) state.maps.off.invalidateSize();
+}, 200);
+});
+// ============ INIT ============
+function init(){
+state.queue = loadQ();
+updNet();
+if(state.queue.length > 0) updQ();
+document.querySelectorAll('[data-mwk]').forEach(el => {
+const val = parseInt(el.dataset.mwk, 10);
+if(!isNaN(val) && el.dataset.format === 'short'){
+el.textContent = formatMWK(val, {short: true});
+}
+});
+document.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click', () => showSec(b.dataset.sec)));
+document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => showSec(b.dataset.goto)));
+const sb = $('settings-btn');
+const sm = $('settings-menu');
+if(sb && sm){
+sb.addEventListener('click', e => {
+e.stopPropagation();
+const open = sm.classList.toggle('open');
+sb.setAttribute('aria-expanded', open);
+});
+}
+document.addEventListener('click', e => {
+if(!e.target.closest('.settings-wrap')){
+if(sm) sm.classList.remove('open');
+if(sb) sb.setAttribute('aria-expanded', 'false');
+}
+});
+document.addEventListener('keydown', e => {
+if(e.key === 'Escape'){
+if(sm) sm.classList.remove('open');
+if(sb) sb.setAttribute('aria-expanded', 'false');
+}
+});
+safeBind('btn-citizen', runCit);
+safeBind('btn-payment', runPay);
+safeBind('btn-ussd', runUSS);
+safeBind('btn-net', toggleNet);
+safeBind('btn-scan-plate', scanPlate);
+safeBind('btn-ticket', issueTicket);
+safeBind('btn-fine', collectFine);
+safeBind('btn-sync', syncQ);
+safeBind('btn-scan-anomaly', runScan);
+safeBind('btn-pdf', () => {
+toast('Generating PDF report...', 'i');
+setTimeout(() => toast('PDF exported successfully', 's'), 1600);
+});
+document.querySelectorAll('[data-drill]').forEach(b => b.addEventListener('click', () => drill(b.dataset.drill)));
+window.addEventListener('online', onOnline);
+window.addEventListener('offline', onOffline);
+window.addEventListener('beforeunload', () => clrDemo());
+initReveal();
+setTimeout(() => {
+document.querySelectorAll('.sec.active .reveal, .sec.active .reveal-stagger').forEach(el => {
+el.classList.add('visible');
+});
+}, 100);
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+})();
+</script>
+</body>
+</html>
